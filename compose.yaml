@@ -62,9 +62,9 @@ services:
     restart: 'no'
     environment:
       <<: *wp-env
-      SITE_URL: http://localhost:8080
-      WP_ADMIN_USER: aurora_admin
-      WP_ADMIN_EMAIL: dtc245200620@ictu.edu.vn
+      SITE_URL: ${SITE_URL:-http://localhost:8080}
+      WP_ADMIN_USER: ${WP_ADMIN_USER:-aurora_admin}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL:-dtc245200620@ictu.edu.vn}
     secrets: [db_password, wp_password]
     volumes: *wp-volumes
     networks: [database]

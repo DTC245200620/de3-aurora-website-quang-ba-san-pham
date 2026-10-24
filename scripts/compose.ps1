@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $RepoRoot = Split-Path $PSScriptRoot -Parent
 function Invoke-Compose {
   $composeArgs = @('--project-directory', $RepoRoot, '--env-file', (Join-Path $RepoRoot '.env'), '-f', (Join-Path $RepoRoot 'compose.yaml'))
-  foreach ($file in @('compose.monitoring.yaml','compose.logging.yaml','compose.lock.yaml')) {
+  foreach ($file in @('compose.monitoring.yaml','compose.logging.yaml','compose.tools.yaml','compose.lock.yaml')) {
     if (Test-Path (Join-Path $RepoRoot $file)) { $composeArgs += @('-f', (Join-Path $RepoRoot $file)) }
   }
   $plugin = Join-Path $env:LOCALAPPDATA 'Programs/DockerDesktop/resources/bin/docker-compose.exe'

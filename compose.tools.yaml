@@ -1,0 +1,43 @@
+services:
+  verifier:
+    image: python:3.13-alpine
+    profiles: [tools]
+    user: '65534:65534'
+    entrypoint: [python, /ops/verify.py]
+    volumes: [./scripts/verify.py:/ops/verify.py:ro]
+    networks: [web, monitoring, tools]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  backup:
+    image: mysql:8.4
+    profiles: [tools]
+    user: '0:0'
+    entrypoint: [sh, /ops/backup.sh]
+    volumes:
+      - ./infra/ops/backup.sh:/ops/backup.sh:ro
+      - ./.local/backups:/backups
+      - wordpress_data:/site:ro
+    secrets: [db_password]
+    networks: [database]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    cap_add: [DAC_OVERRIDE]
+    security_opt: [no-new-privileges:true]
+  restore:
+    image: mysql:8.4
+    profiles: [tools]
+    user: '0:0'
+    entrypoint: [sh, /ops/restore.sh]
+    volumes:
+      - ./infra/ops/restore.sh:/ops/restore.sh:ro
+      - ./.local/backups:/backups:ro
+      - wordpress_data:/site
+    secrets: [db_password]
+    networks: [database]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER]
+    security_opt: [no-new-privileges:true]

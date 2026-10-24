@@ -1,0 +1,74 @@
+services:
+  loki:
+    image: grafana/loki:3.5.3
+    restart: unless-stopped
+    user: '10001:10001'
+    command: [-config.file=/etc/loki/config.yaml]
+    volumes:
+      - ./observability/loki/config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    networks: [monitoring]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    logging: {driver: json-file, options: {max-size: 5m, max-file: '3'}}
+  promtail:
+    image: grafana/promtail:3.5.3
+    restart: unless-stopped
+    user: '65534:65534'
+    command: [-config.file=/etc/promtail/config.yaml]
+    volumes:
+      - ./observability/promtail/config.yaml:/etc/promtail/config.yaml:ro
+      - nginx_logs:/logs/nginx:ro
+      - app_logs:/logs/app:ro
+      - promtail_positions:/positions
+    networks: [monitoring]
+    depends_on:
+      positions-init: {condition: service_completed_successfully}
+      log-init: {condition: service_completed_successfully}
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging: {driver: json-file, options: {max-size: 5m, max-file: '3'}}
+  positions-init:
+    image: alpine:3.22
+    restart: 'no'
+    network_mode: none
+    volumes: [promtail_positions:/positions]
+    command: [sh, -c, 'chown 65534:65534 /positions']
+    cap_drop: [ALL]
+    cap_add: [CHOWN]
+    security_opt: [no-new-privileges:true]
+  logrotate:
+    image: alpine:3.22
+    restart: unless-stopped
+    network_mode: none
+    volumes:
+      - nginx_logs:/logs/nginx
+      - app_logs:/logs/app
+    command:
+      - sh
+      - -c
+      - |
+        while true; do
+          for f in /logs/nginx/*.log /logs/app/*.log; do
+            [ -f "$$f" ] || continue
+            size=$$(wc -c < "$$f")
+            if [ "$$size" -ge 5242880 ]; then
+              rm -f "$$f.3"; [ ! -f "$$f.2" ] || mv "$$f.2" "$$f.3"
+              [ ! -f "$$f.1" ] || mv "$$f.1" "$$f.2"
+              cp "$$f" "$$f.1"; chmod 644 "$$f.1"; : > "$$f"
+            fi
+          done
+          sleep 60
+        done
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [DAC_OVERRIDE]
+    security_opt: [no-new-privileges:true]
+volumes:
+  loki_data:
+  promtail_positions:

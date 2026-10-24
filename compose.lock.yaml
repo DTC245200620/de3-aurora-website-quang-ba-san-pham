@@ -1,0 +1,58 @@
+{
+  "services": {
+    "backup": {
+      "image": "mysql@sha256:76f0358884cb92d9a086d24e5671c38048d3fef40f2588703d73eb55392d6b69"
+    },
+    "cadvisor": {
+      "image": "ghcr.io/google/cadvisor@sha256:b8e7d1093144fd088f425ff003d75a4aa405de075db78dae3bc563730b1bd07a"
+    },
+    "grafana": {
+      "image": "grafana/grafana@sha256:2e986801428cd689c2358605289c90ab37d2b39e24808874971f54c99bcdc412"
+    },
+    "log-init": {
+      "image": "alpine@sha256:2e0b81d60597f449baa56dc25d355367869d2dca4cd57e866f1e2b52af3eb55f"
+    },
+    "logrotate": {
+      "image": "alpine@sha256:2e0b81d60597f449baa56dc25d355367869d2dca4cd57e866f1e2b52af3eb55f"
+    },
+    "loki": {
+      "image": "grafana/loki@sha256:3165cecce301ce5b9b6e3530284b080934a05cd5cafac3d3d82edcb887b45ecd"
+    },
+    "mysql": {
+      "image": "mysql@sha256:76f0358884cb92d9a086d24e5671c38048d3fef40f2588703d73eb55392d6b69"
+    },
+    "mysql-exporter": {
+      "image": "prom/mysqld-exporter@sha256:abed8dac117b4ae5b70757f988e44795935b9a72c3b58d720c67ba688f8cb79e"
+    },
+    "nginx": {
+      "image": "nginxinc/nginx-unprivileged@sha256:7377697a821c131a924a7105fafbe7414db4e9fcc77a6f08f776f33f141ec3f8"
+    },
+    "nginx-exporter": {
+      "image": "nginx/nginx-prometheus-exporter@sha256:9f6d963bb2b19d706d401cc3e2c3ea8de2f1c471b96a2156ca45e76f650b1625"
+    },
+    "phpmyadmin": {
+      "image": "phpmyadmin@sha256:6b5ab5f9ebfe3dbb38388b5695c2ff5ba3e26cdc2c4ce0bd97092eefc6a20bfd"
+    },
+    "positions-init": {
+      "image": "alpine@sha256:2e0b81d60597f449baa56dc25d355367869d2dca4cd57e866f1e2b52af3eb55f"
+    },
+    "prometheus": {
+      "image": "prom/prometheus@sha256:63805ebb8d2b3920190daf1cb14a60871b16fd38bed42b857a3182bc621f4996"
+    },
+    "promtail": {
+      "image": "grafana/promtail@sha256:698c3357886c886bb9a862da36062e130c20bf359d956148e67ee36141ef6f17"
+    },
+    "restore": {
+      "image": "mysql@sha256:76f0358884cb92d9a086d24e5671c38048d3fef40f2588703d73eb55392d6b69"
+    },
+    "verifier": {
+      "image": "python@sha256:bf12ecc0bea3f171d55145dd02c78b5eeb09f30ee2ac9cc2b4c9e4e8f5e30741"
+    },
+    "wordpress": {
+      "image": "wordpress@sha256:d42f63cb89ad0eab272c4b393164e63830d0df270009907919f7dcce52b1a20b"
+    },
+    "wordpress-init": {
+      "image": "wordpress@sha256:661db880e953da051abcac6c0a769767b995a82cd52101c003ca7438dd427d7d"
+    }
+  }
+}

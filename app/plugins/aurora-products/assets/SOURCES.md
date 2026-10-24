@@ -4,7 +4,9 @@
 
 - bottle: https://images.unsplash.com/photo-1602143407151-7111542de6e8
 - headphones: https://images.unsplash.com/photo-1505740420928-5e560c06d30e
-- charger: https://images.unsplash.com/photo-1583863788434-e58a36330cf0
-- keyboard: https://images.unsplash.com/photo-1587829741301-dc798b83add3
+- charger: https://images.unsplash.com/photo-1681382659831-2f3b16748a64
+- keyboard: https://images.unsplash.com/photo-1595225476474-87563907a212
 - mouse: https://images.unsplash.com/photo-1527864550417-7fd91fc51a46
 - speaker: https://images.unsplash.com/photo-1608043152269-423dbba4e7e1
+
+Ảnh sạc không dây: TechieTech Tech — https://unsplash.com/photos/a-cell-phone-and-a-charger-on-a-table-jVlH4WpOFo4
