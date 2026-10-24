@@ -1,0 +1,139 @@
+name: aurora-de3
+x-log: &log
+  driver: json-file
+  options: {max-size: "5m", max-file: "3"}
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: aurora
+      MYSQL_USER: aurora
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    secrets: [db_password, db_root_password, exporter_password]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./infra/mysql/init.sh:/docker-entrypoint-initdb.d/10-users.sh:ro
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, 'MYSQL_PWD=$$(cat /run/secrets/db_password) mysql -uaurora aurora -e "SELECT 1" >/dev/null']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    security_opt: [no-new-privileges:true]
+    logging: *log
+  wordpress:
+    image: wordpress:php8.3-apache
+    restart: unless-stopped
+    environment: &wp-env
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_NAME: aurora
+      WORDPRESS_DB_USER: aurora
+      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
+      WORDPRESS_CONFIG_EXTRA: |
+        define('DISALLOW_FILE_EDIT', true);
+        define('DISALLOW_FILE_MODS', true);
+        define('WP_AUTO_UPDATE_CORE', false);
+        define('WP_ENVIRONMENT_TYPE', 'local');
+    secrets: [db_password]
+    volumes: &wp-volumes
+      - wordpress_data:/var/www/html
+      - ./app/themes/aurora:/var/www/html/wp-content/themes/aurora:ro
+      - ./app/plugins/aurora-products:/var/www/html/wp-content/plugins/aurora-products:ro
+      - ./infra/php/logging.ini:/usr/local/etc/php/conf.d/aurora.ini:ro
+      - app_logs:/var/log/aurora
+    networks: [web, database]
+    depends_on:
+      mysql: {condition: service_healthy}
+      log-init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, php, '-r', 'exit(@file_get_contents("http://127.0.0.1/wp-login.php")===false?1:0);']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    security_opt: [no-new-privileges:true]
+    logging: *log
+  wordpress-init:
+    image: wordpress:cli-php8.3
+    user: '33:33'
+    restart: 'no'
+    environment:
+      <<: *wp-env
+      SITE_URL: http://localhost:8080
+      WP_ADMIN_USER: aurora_admin
+      WP_ADMIN_EMAIL: dtc245200620@ictu.edu.vn
+    secrets: [db_password, wp_password]
+    volumes: *wp-volumes
+    networks: [database]
+    depends_on:
+      wordpress: {condition: service_healthy}
+    entrypoint: [sh, /opt/aurora-init.sh]
+    configs:
+      - source: wp_init
+        target: /opt/aurora-init.sh
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging: *log
+  nginx:
+    image: nginxinc/nginx-unprivileged:1.28-alpine
+    user: '101:101'
+    restart: unless-stopped
+    entrypoint: [nginx, '-g', 'daemon off;']
+    ports: ['127.0.0.1:8080:8080']
+    volumes:
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - nginx_logs:/var/log/aurora
+    networks: [web, monitoring]
+    depends_on:
+      wordpress-init: {condition: service_completed_successfully}
+      log-init: {condition: service_completed_successfully}
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, wget, -q, --spider, 'http://127.0.0.1:8080/healthz']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging: *log
+  log-init:
+    image: alpine:3.22
+    restart: 'no'
+    network_mode: none
+    volumes: [nginx_logs:/nginx, app_logs:/app]
+    command: [sh, -c, 'touch /nginx/access.log /nginx/error.log /app/events.log /app/php-error.log; chown -R 101:101 /nginx; chown -R 33:33 /app; chmod 755 /nginx /app; chmod 644 /nginx/* /app/*']
+    cap_drop: [ALL]
+    cap_add: [CHOWN, FOWNER, DAC_OVERRIDE]
+    security_opt: [no-new-privileges:true]
+  phpmyadmin:
+    image: phpmyadmin:5.2.2
+    restart: unless-stopped
+    environment: {PMA_HOST: mysql, PMA_ARBITRARY: '0', UPLOAD_LIMIT: 32M}
+    ports: ['127.0.0.1:8081:80']
+    networks: [tools, database]
+    depends_on:
+      mysql: {condition: service_healthy}
+    security_opt: [no-new-privileges:true]
+    logging: *log
+configs:
+  wp_init:
+    file: ./infra/wordpress/init.sh
+secrets:
+  db_password: {file: ./.local/secrets/db_password}
+  db_root_password: {file: ./.local/secrets/db_root_password}
+  exporter_password: {file: ./.local/secrets/exporter_password}
+  wp_password: {file: ./.local/secrets/wp_password}
+volumes:
+  mysql_data:
+  wordpress_data:
+  nginx_logs:
+  app_logs:
+networks:
+  web:
+  database: {internal: true}
+  monitoring: {internal: true}
+  tools:

@@ -1,0 +1,1 @@
+<?php get_header(); ?><section class="section"><div class="container prose"><span class="kicker">404</span><h1>Không tìm thấy trang</h1><p>Nội dung bạn tìm có thể đã được di chuyển.</p><a class="button primary" href="<?php echo esc_url(home_url('/')); ?>">Về trang chủ</a></div></section><?php get_footer(); ?>

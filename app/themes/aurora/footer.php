@@ -1,0 +1,3 @@
+</main>
+<footer class="footer"><div class="container footer-grid"><div><a class="brand" href="<?php echo esc_url(home_url('/')); ?>"><span class="brand-mark">A</span><b>Aurora</b></a><p>Sản phẩm tinh tế. Trải nghiệm mỗi ngày.</p></div><div><strong>Khám phá</strong><a href="<?php echo esc_url(get_post_type_archive_link('aurora_product')); ?>">Bộ sưu tập</a><a href="<?php echo esc_url(home_url('/gioi-thieu/')); ?>">Câu chuyện Aurora</a></div><div><strong>Kết nối</strong><a href="<?php echo esc_url(home_url('/lien-he/')); ?>">Liên hệ tư vấn</a><span>Đồng hành cùng phong cách của bạn</span></div></div><div class="container footer-bottom">© <?php echo esc_html(date('Y')); ?> Aurora · Website giới thiệu sản phẩm</div></footer>
+<?php wp_footer(); ?></body></html>

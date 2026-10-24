@@ -1,0 +1,4 @@
+<?php get_header(); while(have_posts()): the_post(); ?>
+<div class="container breadcrumb"><a href="<?php echo esc_url(home_url('/')); ?>">Trang chủ</a> / <a href="<?php echo esc_url(get_post_type_archive_link('aurora_product')); ?>">Sản phẩm</a> / <?php the_title(); ?></div>
+<section class="container product-detail"><div class="detail-image"><?php the_post_thumbnail('large'); ?></div><div><span class="kicker"><?php echo esc_html(get_post_meta(get_the_ID(),'aurora_sku',true)); ?></span><h1><?php the_title(); ?></h1><p class="detail-price"><?php echo esc_html(aurora_price()); ?></p><div class="content"><?php the_content(); ?></div><a class="button primary" href="<?php echo esc_url(home_url('/lien-he/')); ?>">Liên hệ tư vấn ↗</a><p class="muted">Thông tin và giá niêm yết để tham khảo. Liên hệ Aurora để được tư vấn.</p></div></section>
+<?php endwhile; get_footer(); ?>

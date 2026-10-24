@@ -1,0 +1,6 @@
+.local/
+.env
+__pycache__/
+node_modules/
+docs/report/_qa/
+*.tmp
