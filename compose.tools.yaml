@@ -14,6 +14,9 @@ services:
     profiles: [tools]
     user: '0:0'
     entrypoint: [sh, /ops/backup.sh]
+    environment:
+      BACKUP_UID: ${LOCAL_UID:-1000}
+      BACKUP_GID: ${LOCAL_GID:-1000}
     volumes:
       - ./infra/ops/backup.sh:/ops/backup.sh:ro
       - ./.local/backups:/backups
@@ -23,7 +26,7 @@ services:
     read_only: true
     tmpfs: [/tmp]
     cap_drop: [ALL]
-    cap_add: [DAC_OVERRIDE]
+    cap_add: [DAC_OVERRIDE, CHOWN]
     security_opt: [no-new-privileges:true]
   restore:
     image: mysql:8.4

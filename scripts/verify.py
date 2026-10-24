@@ -11,6 +11,20 @@ def prom(q):return get("http://prometheus:9090/api/v1/query?"+urllib.parse.urlen
 def check(condition,text):
     if not condition:raise AssertionError(text)
     print("PASS "+text,flush=True)
+def wait_for_observability():
+    last_error = "No metrics yet"
+    for attempt in range(45):
+        try:
+            targets=get("http://prometheus:9090/api/v1/targets")["data"]["activeTargets"]
+            label='container_label_com_docker_compose_project="aurora-de3"'
+            cpu=prom("rate(container_cpu_usage_seconds_total{"+label+"}[2m])")
+            services={v["metric"].get("container_label_com_docker_compose_service") for v in cpu}
+            if len(targets)==4 and all(t["health"]=="up" for t in targets) and {"wordpress","nginx","mysql"}.issubset(services) and request("http://grafana:3000/api/health")[0]==200:
+                return
+        except Exception as error:
+            last_error=str(error)
+        time.sleep(2)
+    raise AssertionError("Observability did not become ready: "+last_error)
 def main():
     status,html,headers=request("http://nginx:8080/",host="localhost:8080")
     check(status==200 and html.count('class="product-card"')>=1,"Website serves product catalog")
@@ -19,6 +33,7 @@ def main():
     for path in ["/san-pham/","/gioi-thieu/","/lien-he/"]:
         check(request("http://nginx:8080"+path,host="localhost:8080")[0]==200,"Public page "+path)
     check(request("http://phpmyadmin/")[0]==200,"phpMyAdmin reachable")
+    wait_for_observability()
     check(request("http://grafana:3000/api/health")[0]==200,"Grafana health")
     targets=get("http://prometheus:9090/api/v1/targets")["data"]["activeTargets"]
     check(len(targets)==4 and all(t["health"]=="up" for t in targets),"All four Prometheus targets UP")

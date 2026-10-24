@@ -4,6 +4,8 @@ cd "$(dirname "$0")/.."
 umask 077
 mkdir -p .local/secrets .local/backups
 [ -f .env ] || cp .env.example .env
+grep -q '^LOCAL_UID=' .env || printf 'LOCAL_UID=%s\n' "$(id -u)" >> .env
+grep -q '^LOCAL_GID=' .env || printf 'LOCAL_GID=%s\n' "$(id -g)" >> .env
 for name in db_password db_root_password exporter_password wp_password grafana_password; do
   if [ ! -s ".local/secrets/$name" ]; then
     od -An -N32 -tx1 /dev/urandom | tr -d ' \n' > ".local/secrets/$name"
